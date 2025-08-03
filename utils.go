@@ -51,7 +51,7 @@ func request(end, key string, body []byte) (*[]byte, error) {
 			return nil, errAuth
 		}
 
-		if res.StatusCode > http.StatusBadRequest || res.StatusCode < http.StatusInternalServerError {
+		if res.StatusCode > http.StatusBadRequest && res.StatusCode < http.StatusInternalServerError {
 			return nil, errConflict
 		}
 

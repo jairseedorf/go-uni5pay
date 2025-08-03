@@ -100,15 +100,8 @@ func requestRefund(input RefundInput) (*RefundOutput, error) {
 }
 
 func verifyTransaction(input VerifyInput) (*VerifyOutput, error) {
-	curr := convertCurr(input.Currency)
-	if curr == nil {
-		return nil, errCurrency
-	}
-
 	body := verifyReq{
 		ExtOrderNo: input.ExtOrderNo,
-		Currency:   *curr,
-		Amount:     fmt.Sprintf("%.2f", input.Amount),
 	}
 
 	bytes, err := json.Marshal(body)
@@ -139,7 +132,7 @@ func verifyCallback(input CallbackInput) error {
 	recSig := query.Get("signature")
 	timestamp := query.Get("timestamp")
 
-	if recSig == "" || timestamp == "" {
+	if empty(recSig) || empty(timestamp) {
 		return errSignature
 	}
 

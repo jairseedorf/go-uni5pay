@@ -2,21 +2,61 @@ package uni5pay
 
 import "net/http"
 
+// The config represent the top-level credentials required to call the API.
+//
+// These values are provided by the bank once you've setup your account.
 type Config struct {
-	MerchantID  string
-	MerchantKey string
+	// Your Uni5Pay+ Merchant ID
+	MerchantID string `min:"32" type:"string" required:"true"`
+
+	// Your Uni5Pay+ API key.
+	MerchantKey string `min:"32" type:"string" required:"true"`
 }
 
+// The request paramaters for generating a new QR code.
 type CodeInput struct {
-	Config      *Config
-	Amount      float64
-	Currency    string
-	CallbackURL string
+	// Pointer to the credentials struct.
+	//
+	// Config is a required field.
+	Config *Config `type:"structure" required:"true"`
 
-	RedirectFailedURL  string
-	RedirectSuccessURL string
+	// Total amount to charge the customer.
+	//
+	// Amount is a required field.
+	Amount float64 `min:"1" type:"number" required:"true"`
+
+	// Currency code in ISO-4217 format.
+	//
+	// Currency is a required field.
+	Currency string `lenght:"3" type:"string" required:"true"`
+
+	// The URL where the instant payment notification is sent to.
+	//
+	// Use the VerifyCallback API to verify callbacks securely.
+	CallbackURL string `type:"string" required:"false"`
+
+	// The URL where the customer is redirected to if the payment fails.
+	RedirectFailedURL string `type:"string" required:"false"`
+
+	// The URL where the customer is redirected to once the payment succeeds.
+	RedirectSuccessURL string `type:"string" required:"false"`
 }
 
+// The response parameters.
+//
+// Returned fields:
+//
+//   - ExtOrderNo
+//     The external order number.
+//
+//   - OrderNo
+//     The order number of the transaction.
+//
+//   - QrCode
+//     The QR code secret used to generate the image.
+//
+//   - DeepLink
+//     The URL for in-app linking. This opens the Uni5Pay+ app.
 type CodeOutput struct {
 	ExtOrderNo string `json:"ext_order_no"`
 	OrderNo    string `json:"order_no"`
@@ -24,28 +64,65 @@ type CodeOutput struct {
 	Deeplink   string `json:"deep_link"`
 }
 
+// The request parameters for refunding a transaction.
 type RefundInput struct {
-	Config     *Config
-	ExtOrderNo string
-	Amount     float64
-	Currency   string
+	// Pointer to the credentials struct.
+	//
+	// Config is a required field.
+	Config *Config `type:"structure" required:"true"`
+
+	// The external order.
+	//
+	// ExtOrderNo is a required field.
+	ExtOrderNo string `min:"8" type:"string" required:"true"`
+
+	// Total amount to refund the customer.
+	//
+	// Amount is a required field.
+	Amount float64 `min:"1" type:"number" required:"true"`
+
+	// Currency code in ISO-4217 format.
+	//
+	// Currency is a required field.
+	Currency string `lenght:"3" type:"string" required:"true"`
 }
 
+// The response parameters.
 type RefundOutput struct{}
 
+// The request parameters for verifying a transaction.
 type VerifyInput struct {
-	Config     *Config
-	ExtOrderNo string
-	Amount     float64
-	Currency   string
+	// Pointer to the credentials struct.
+	//
+	// Config is a required field.
+	Config *Config `type:"structure" required:"true"`
+
+	// The external order.
+	//
+	// ExtOrderNo is a required field.
+	ExtOrderNo string `min:"8" type:"string" required:"true"`
 }
 
+// The response parameters.
+//
+// Returned fields:
+//
+//   - Status
+//     The current status of the transaction.
 type VerifyOutput struct {
 	Status string `json:"status"`
 }
 
+// The request parameters for verifying a transaction.
 type CallbackInput struct {
-	Config  *Config
+	// Pointer to the credentials struct.
+	//
+	// Config is a required field.
+	Config *Config `type:"structure" required:"true"`
+
+	// Pointer to the full HTTP request.
+	//
+	// Request is a required field.
 	Request *http.Request
 }
 
@@ -87,13 +164,8 @@ type refundRes struct {
 
 type verifyReq struct {
 	ExtOrderNo string `json:"extOrderNo"`
-	Amount     string `json:"amount"`
-	Currency   string `json:"currency"`
 }
 
 type verifyRes struct {
-	ExtOrderNo string  `json:"extOrderNo"`
-	Amount     float64 `json:"amount"`
-	Currency   string  `json:"currency"`
-	Status     string  `json:"status"`
+	Status string `json:"status"`
 }
