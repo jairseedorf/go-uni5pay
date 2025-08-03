@@ -1,7 +1,7 @@
 package uni5pay
 
 // Initialize Uni5Pay+ credentials
-func (input Config) New() *Config {
+func New(input Config) *Config {
 	if empty(input.MerchantID) || empty(input.MerchantKey) {
 		return nil
 	}
@@ -13,8 +13,8 @@ func (input Config) New() *Config {
 }
 
 // Generate a new QR payment code.
-func (input CodeInput) GenerateCode() (*CodeOutput, error) {
-	config := input.Config.New()
+func GenerateCode(input CodeInput) (*CodeOutput, error) {
+	config := input.Config
 	if config == nil {
 		return nil, errClient
 	}
@@ -28,8 +28,8 @@ func (input CodeInput) GenerateCode() (*CodeOutput, error) {
 }
 
 // Get the current status of a payment.
-func (input VerifyInput) VerifyTransaction() (*VerifyOutput, error) {
-	config := input.Config.New()
+func VerifyTransaction(input VerifyInput) (*VerifyOutput, error) {
+	config := input.Config
 	if config == nil {
 		return nil, errClient
 	}
@@ -43,8 +43,8 @@ func (input VerifyInput) VerifyTransaction() (*VerifyOutput, error) {
 }
 
 // Refund a payment
-func (input RefundInput) RefundTransaction() (*RefundOutput, error) {
-	config := input.Config.New()
+func RefundTransaction(input RefundInput) (*RefundOutput, error) {
+	config := input.Config
 	if config == nil {
 		return nil, errClient
 	}
@@ -58,8 +58,8 @@ func (input RefundInput) RefundTransaction() (*RefundOutput, error) {
 }
 
 // Verify a callback signature
-func (input CallbackInput) VerifyCallback() error {
-	config := input.Config.New()
+func VerifyCallback(input CallbackInput) error {
+	config := input.Config
 	if config == nil {
 		return errClient
 	}
