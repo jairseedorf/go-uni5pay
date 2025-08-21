@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -23,23 +22,36 @@ func requestQrCode(input CodeInput) (*CodeOutput, error) {
 
 	if !empty(input.CallbackURL) {
 		timestamp := time.Now().Unix()
-		payload := fmt.Sprintf("%s:%s:%s:%d",
+		payload := fmt.Sprintf("%s:%s:%d",
 			terminal,
 			input.Config.MerchantID,
-			input.CallbackURL,
 			timestamp,
 		)
+
 		signature := sign(payload, input.Config.MerchantKey)
-		body.UrlNotify = fmt.Sprintf("%s?signature=%s&timestamp=%d",
-			input.CallbackURL,
-			signature,
-			timestamp,
-		)
+		callback, err := signURL(input.CallbackURL, signature, timestamp)
+		if err != nil {
+			return nil, err
+		}
+
+		body.UrlNotify = *callback
 	}
+
 	if !empty(input.RedirectSuccessURL) {
+		err := validateURL(input.RedirectSuccessURL)
+		if err != nil {
+			return nil, err
+		}
+
 		body.UrlSuccess = input.RedirectSuccessURL
 	}
+
 	if !empty(input.RedirectFailedURL) {
+		err := validateURL(input.RedirectFailedURL)
+		if err != nil {
+			return nil, err
+		}
+
 		body.UrlFailed = input.RedirectFailedURL
 	}
 
@@ -141,11 +153,9 @@ func verifyCallback(input CallbackInput) error {
 		return errSignature
 	}
 
-	originalURL := strings.SplitN(url.String(), "?", 2)[0]
-	payload := fmt.Sprintf("%s:%s:%s:%s",
+	payload := fmt.Sprintf("%s:%s:%s",
 		terminal,
 		input.Config.MerchantID,
-		originalURL,
 		timestamp,
 	)
 	ecpSig := sign(payload, input.Config.MerchantKey)

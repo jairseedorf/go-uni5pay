@@ -2,9 +2,13 @@ package uni5pay
 
 import "errors"
 
-var errSystem = errors.New("internal server error")
-var errAuth = errors.New("invalid or unauthorized merchant key")
-var errClient = errors.New("missing one or more required parameters")
-var errConflict = errors.New("unable to process request at this time")
-var errCurrency = errors.New("unsupported currency code")
-var errSignature = errors.New("invalid callback signature")
+var (
+	errSystem        = errors.New("internal server error")
+	errAuth          = errors.New("invalid or unauthorized merchant key")
+	errClient        = errors.New("missing one or more required parameters")
+	errInvalidURL    = errors.New("invalid URL format")
+	errCallbackParam = errors.New("callback URL cannot contain reserved parameters: signature or timestamp")
+	errConflict      = errors.New("unable to process request at this time")
+	errCurrency      = errors.New("unsupported currency code")
+	errSignature     = errors.New("invalid callback signature")
+)

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -102,4 +103,53 @@ func convertCurr(c string) *string {
 	default:
 		return nil
 	}
+}
+
+func validateURL(raw string) error {
+	if empty(strings.TrimSpace(raw)) {
+		return errInvalidURL
+	}
+
+	u, err := url.ParseRequestURI(raw)
+	if err != nil {
+		return errInvalidURL
+	}
+
+	if !equals(u.Scheme, "https") {
+		return errInvalidURL
+	}
+
+	if empty(u.Host) {
+		return errInvalidURL
+	}
+
+	return nil
+}
+
+func signURL(callbackURL, signature string, timestamp int64) (*string, error) {
+	err := validateURL(callbackURL)
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := url.Parse(callbackURL)
+	if err != nil {
+		return nil, errCallbackParam
+	}
+	q := u.Query()
+
+	if _, exists := q["signature"]; exists {
+		return nil, errCallbackParam
+	}
+	if _, exists := q["timestamp"]; exists {
+		return nil, errCallbackParam
+	}
+
+	q.Set("signature", signature)
+	q.Set("timestamp", fmt.Sprintf("%d", timestamp))
+
+	u.RawQuery = q.Encode()
+	r := u.String()
+
+	return &r, nil
 }
